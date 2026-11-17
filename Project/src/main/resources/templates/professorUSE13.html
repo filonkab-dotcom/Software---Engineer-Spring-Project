@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="el" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Προφίλ Καθηγητή | Traineeship Application</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<!-- Header -->
+<header>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/professor/dashboard">Traineeship Application</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/professor/profile">Το Προφίλ μου</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/professor/positions">Θέσεις Πρακτικής</a>
+                    </li>
+                </ul>
+                <div class="d-flex">
+                        <span class="navbar-text me-3">
+                            <span th:text="${user.firstName + ' ' + user.lastName}">Δρ. Μαρία Αντωνίου</span>
+                        </span>
+                    <a href="/logout" class="btn btn-outline-light btn-sm">Αποσύνδεση</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<!-- Main Content -->
+<main class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1>Το Προφίλ μου</h1>
+            <p class="text-muted">Διαχειριστείτε το προφίλ σας και τα ερευνητικά σας ενδιαφέροντα</p>
+        </div>
+    </div>
+
+    <!-- Alert for successful profile update -->
+    <div class="alert alert-success alert-dismissible fade show" role="alert" th:if="${successMessage}">
+        <strong>Επιτυχία!</strong> <span th:text="${successMessage}">Το προφίλ σας ενημερώθηκε επιτυχώς.</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <!-- Profile Form -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Προσωπικά Στοιχεία</h5>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/professor/profile}" action="/professor/profile" method="post" th:object="${professorForm}">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="firstName" class="form-label">Όνομα</label>
+                                <input type="text" class="form-control" id="firstName" name="firstName"
+                                       th:value="${professorForm.firstName}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="lastName" class="form-label">Επώνυμο</label>
+                                <input type="text" class="form-control" id="lastName" name="lastName"
+                                       th:value="${professorForm.lastName}" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email"
+                                   th:value="${professorForm.email}" readonly>
+                            <div class="form-text">Το email δεν μπορεί να αλλάξει καθώς χρησιμοποιείται για τη σύνδεσή σας στο σύστημα.</div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <h5>Ερευνητικά Ενδιαφέροντα</h5>
+                        <p class="text-muted mb-3">Προσθέστε τα ερευνητικά ενδιαφέροντά σας για καλύτερο ταίριασμα με τις θέσεις πρακτικής άσκησης.</p>
+
+                        <div class="mb-3">
+                            <div id="interestsContainer">
+                                <!-- Εδώ χρησιμοποιούμε th:each με $ αντί για * -->
+                                <div class="input-group mb-2" th:each="interest, status : ${professorForm.interests}">
+                                    <input type="text" class="form-control" name="interests"
+                                           th:value="${interest}" placeholder="Προσθέστε ενδιαφέρον" required>
+                                    <button class="btn btn-outline-danger remove-interest" type="button">Αφαίρεση</button>
+                                </div>
+
+                                <!-- Default empty field if no interests exist -->
+                                <div class="input-group mb-2" th:if="${#lists.isEmpty(professorForm.interests)}">
+                                    <input type="text" class="form-control" name="interests[0]"
+                                           placeholder="Προσθέστε ενδιαφέρον" required>
+                                    <button class="btn btn-outline-danger remove-interest" type="button">Αφαίρεση</button>
+                                </div>
+                            </div>
+
+                            <button type="button" id="addInterestBtn" class="btn btn-outline-secondary">
+                                <i class="bi bi-plus-circle"></i> Προσθήκη Ενδιαφέροντος
+                            </button>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <button type="button" class="btn btn-secondary me-md-2" onclick="window.location.reload()">Ακύρωση</button>
+                            <button type="submit" class="btn btn-primary">Αποθήκευση</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar with profile statistics -->
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Στατιστικά Στοιχεία</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="flex-shrink-0">
+                            <div class="avatar bg-primary text-white rounded p-3">
+                                <span th:text="${user.firstName.substring(0,1) + user.lastName.substring(0,1)}">ΜΑ</span>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h5 class="mb-0" th:text="${user.firstName + ' ' + user.lastName}">Δρ. Μαρία Αντωνίου</h5>
+                            <p class="text-muted mb-0" th:text="${user.email}">m.antoniou@example.com</p>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="mb-3">
+                        <h6>Εποπτευόμενες Θέσεις</h6>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="text-muted">Ενεργές:</div>
+                            <span class="badge bg-primary" th:text="${activePositions != null ? activePositions : '3'}">3</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <div class="text-muted">Συνολικές:</div>
+                            <span class="badge bg-secondary" th:text="${totalPositions != null ? totalPositions : '12'}">12</span>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div>
+                        <h6>Τελευταία Σύνδεση</h6>
+                        <p class="text-muted mb-0" th:text="${lastLogin != null ? #temporals.format(lastLogin, 'dd/MM/yyyy HH:mm') : '20/04/2025 09:15'}">20/04/2025 09:15</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Αλλαγή Κωδικού</h5>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/professor/change-password}" action="/professor/change-password" method="post">
+                        <div class="mb-3">
+                            <label for="currentPassword" class="form-label">Τρέχων Κωδικός</label>
+                            <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newPassword" class="form-label">Νέος Κωδικός</label>
+                            <input type="password" class="form-control" id="newPassword" name="newPassword" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="confirmPassword" class="form-label">Επιβεβαίωση Κωδικού</label>
+                            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-secondary">Αλλαγή Κωδικού</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Footer -->
+<footer class="bg-light text-center p-3 mt-5">
+    <p>© 2025 Traineeship Application System</p>
+</footer>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add Interest field
+        document.getElementById('addInterestBtn').addEventListener('click', function() {
+            const container = document.getElementById('interestsContainer');
+            const newField = document.createElement('div');
+            newField.className = 'input-group mb-2';
+
+            const index = container.children.length;
+            newField.innerHTML = `
+                    <input type="text" class="form-control" name="interests[${index}]" placeholder="Προσθέστε ενδιαφέρον" required>
+                    <button class="btn btn-outline-danger remove-interest" type="button">Αφαίρεση</button>
+                `;
+
+            container.appendChild(newField);
+
+            // Add event listener to new remove button
+            newField.querySelector('.remove-interest').addEventListener('click', removeInterest);
+        });
+
+        // Remove Interest field
+        function removeInterest() {
+            const container = document.getElementById('interestsContainer');
+            if (container.children.length > 1) {
+                this.closest('.input-group').remove();
+
+                // Renumber the indexes
+                const inputs = container.querySelectorAll('input[name^="interests"]');
+                inputs.forEach((input, idx) => {
+                    input.name = `interests[${idx}]`;
+                });
+            } else {
+                // If this is the last one, just clear the value
+                this.closest('.input-group').querySelector('input').value = '';
+            }
+        }
+
+        // Attach event listeners to existing remove buttons
+        document.querySelectorAll('.remove-interest').forEach(button => {
+            button.addEventListener('click', removeInterest);
+        });
+
+        // Password validation
+        const passwordForm = document.querySelector('form[action="/professor/change-password"]');
+        if (passwordForm) {
+            passwordForm.addEventListener('submit', function(event) {
+                const newPassword = document.getElementById('newPassword').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+
+                if (newPassword !== confirmPassword) {
+                    event.preventDefault();
+                    alert('Οι κωδικοί δεν ταιριάζουν. Παρακαλώ δοκιμάστε ξανά.');
+                }
+            });
+        }
+    });
+</script>
+<style>
+    .avatar {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1.25rem;
+    }
+</style>
+</body>
+</html>

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="el" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Εποπτευόμενες Θέσεις Πρακτικής | Traineeship Application</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<!-- Header -->
+<header>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/professor/dashboard">Traineeship Application</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/professor/profile">Το Προφίλ μου</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/professor/positions">Θέσεις Πρακτικής</a>
+                    </li>
+                </ul>
+                <div class="d-flex">
+                        <span class="navbar-text me-3">
+                            <span th:text="${user.firstName + ' ' + user.lastName}">Δρ. Μαρία Αντωνίου</span>
+                        </span>
+                    <a href="/logout" class="btn btn-outline-light btn-sm">Αποσύνδεση</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<!-- Main Content -->
+<main class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1>Εποπτευόμενες Θέσεις Πρακτικής</h1>
+            <p class="text-muted">Διαχειριστείτε τις θέσεις πρακτικής άσκησης που επιβλέπετε</p>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Αναζήτηση φοιτητή ή εταιρείας..." id="searchInput" data-search-table="positionsTable">
+                <button class="btn btn-outline-secondary" type="button">Αναζήτηση</button>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <select class="form-select" id="companyFilter">
+                <option value="">Όλες οι εταιρείες</option>
+                <option th:each="company : ${companies}" th:value="${company.id}" th:text="${company.companyName}"></option>
+                <!-- Example for preview -->
+                <option>Tech Solutions SA</option>
+                <option>DataCorp</option>
+                <option>InnoTech</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select class="form-select" id="statusFilter">
+                <option value="">Όλες οι καταστάσεις</option>
+                <option value="active">Ενεργές</option>
+                <option value="completed">Ολοκληρωμένες</option>
+                <option value="pending_evaluation">Εκκρεμεί αξιολόγηση</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title">Ενεργές Θέσεις</h6>
+                            <h2 class="mb-0" th:text="${activePositionsCount ?: '3'}">3</h2>
+                        </div>
+                        <div class="fs-1">
+                            <i class="bi bi-briefcase-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-warning text-dark shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title">Εκκρεμούν Αξιολόγηση</h6>
+                            <h2 class="mb-0" th:text="${pendingEvaluationCount ?: '2'}">2</h2>
+                        </div>
+                        <div class="fs-1">
+                            <i class="bi bi-clipboard-check"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title">Ολοκληρωμένες</h6>
+                            <h2 class="mb-0" th:text="${completedPositionsCount ?: '8'}">8</h2>
+                        </div>
+                        <div class="fs-1">
+                            <i class="bi bi-check-circle-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Positions Table -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover" id="positionsTable">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Τίτλος</th>
+                        <th>Εταιρεία</th>
+                        <th>Φοιτητής</th>
+                        <th>Περίοδος</th>
+                        <th>Κατάσταση</th>
+                        <th>Ενέργειες</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <!-- Thymeleaf loop through positions -->
+                    <tr th:each="position : ${positions}" th:classappend="${position.needsEvaluation} ? 'table-warning' : ''">
+                        <td th:text="${position.id}">1</td>
+                        <td th:text="${position.title}">Java Developer Internship</td>
+                        <td th:text="${position.companyName}">Tech Solutions SA</td>
+                        <td th:text="${position.studentName}">Γιώργος Παπαδόπουλος</td>
+                        <td th:text="${#temporals.format(position.startDate, 'dd/MM/yyyy') + ' - ' + #temporals.format(position.endDate, 'dd/MM/yyyy')}">01/06/2025 - 31/08/2025</td>
+                        <td>
+                            <span th:if="${position.status == 'ACTIVE'}" class="badge bg-success">Ενεργή</span>
+                            <span th:if="${position.status == 'COMPLETED'}" class="badge bg-secondary">Ολοκληρώθηκε</span>
+                            <span th:if="${position.status == 'PENDING_EVALUATION'}" class="badge bg-warning">Εκκρεμεί Αξιολόγηση</span>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a th:href="@{/professor/positions/{id}(id=${position.id})}" href="/professor/positions/1" class="btn btn-outline-secondary">Λεπτομέρειες</a>
+                                <a th:if="${position.needsEvaluation}" th:href="@{/professor/evaluate/{id}(id=${position.id})}" href="/professor/evaluate/1" class="btn btn-outline-primary">Αξιολόγηση</a>
+                            </div>
+                        </td>
+                    </tr>
+                    <!-- Example rows for preview -->
+                    <tr class="table-warning">
+                        <td>1</td>
+                        <td>Java Developer Internship</td>
+                        <td>Tech Solutions SA</td>
+                        <td>Γιώργος Παπαδόπουλος</td>
+                        <td>01/06/2025 - 31/08/2025</td>
+                        <td>
+                            <span class="badge bg-warning">Εκκρεμεί Αξιολόγηση</span>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="/professor/positions/1" class="btn btn-outline-secondary">Λεπτομέρειες</a>
+                                <a href="/professor/evaluate/1" class="btn btn-outline-primary">Αξιολόγηση</a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>Web Developer Intern</td>
+                        <td>DataCorp</td>
+                        <td>Μαρία Νικολάου</td>
+                        <td>15/06/2025 - 15/09/2025</td>
+                        <td>
+                            <span class="badge bg-success">Ενεργή</span>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="/professor/positions/2" class="btn btn-outline-secondary">Λεπτομέρειες</a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>Android Developer</td>
+                        <td>MobileTech</td>
+                        <td>Νίκος Δημητρίου</td>
+                        <td>01/04/2025 - 30/06/2025</td>
+                        <td>
+                            <span class="badge bg-secondary">Ολοκληρώθηκε</span>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="/professor/positions/3" class="btn btn-outline-secondary">Λεπτομέρειες</a>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            <li class="page-item disabled">
+                <a class="page-link" href="#" tabindex="-1">Προηγούμενη</a>
+            </li>
+            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+            <li class="page-item"><a class="page-link" href="#">2</a></li>
+            <li class="page-item">
+                <a class="page-link" href="#">Επόμενη</a>
+            </li>
+        </ul>
+    </nav>
+</main>
+
+<!-- Footer -->
+<footer class="bg-light text-center p-3 mt-5">
+    <p>© 2025 Traineeship Application System</p>
+</footer>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
+<script src="/js/app.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Filter functionality
+        const companyFilter = document.getElementById('companyFilter');
+        const statusFilter = document.getElementById('statusFilter');
+
+        function applyFilters() {
+            const companyValue = companyFilter.value.toLowerCase();
+            const statusValue = statusFilter.value.toLowerCase();
+
+            const rows = document.querySelectorAll('#positionsTable tbody tr');
+
+            rows.forEach(row => {
+                const company = row.cells[2].textContent.toLowerCase();
+                const statusCell = row.cells[5].querySelector('.badge');
+                const status = statusCell ? statusCell.textContent.toLowerCase() : '';
+
+                const companyMatch = !companyValue || company.includes(companyValue);
+
+                let statusMatch = true;
+                if (statusValue === 'active') {
+                    statusMatch = status.includes('ενεργή');
+                } else if (statusValue === 'completed') {
+                    statusMatch = status.includes('ολοκληρώθηκε');
+                } else if (statusValue === 'pending_evaluation') {
+                    statusMatch = status.includes('εκκρεμεί');
+                }
+
+                row.style.display = (companyMatch && statusMatch) ? '' : 'none';
+            });
+        }
+
+        companyFilter.addEventListener('change', applyFilters);
+        statusFilter.addEventListener('change', applyFilters);
+    });
+</script>
+</body>
+</html>

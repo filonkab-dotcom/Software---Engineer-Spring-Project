@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="el" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Θέσεις Πρακτικής | Traineeship Application</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<!-- Header -->
+<header>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/company/dashboard">Traineeship Application</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/company/profile">Το Προφίλ μας</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/company/positions">Θέσεις Πρακτικής</a>
+                    </li>
+                </ul>
+                <div class="d-flex">
+                        <span class="navbar-text me-3">
+                            <span th:text="${user.companyName}">Tech Solutions SA</span>
+                        </span>
+                    <a href="/logout" class="btn btn-outline-light btn-sm">Αποσύνδεση</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<!-- Main Content -->
+<main class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1>Διαχείριση Θέσεων Πρακτικής Άσκησης</h1>
+            <p class="text-muted">Διαχειριστείτε τις θέσεις πρακτικής άσκησης της εταιρείας σας</p>
+        </div>
+        <div class="col-auto">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newPositionModal">
+                <i class="bi bi-plus-circle me-1"></i> Νέα Θέση
+            </button>
+        </div>
+    </div>
+
+    <!-- Alert for messages -->
+    <div class="alert alert-success alert-dismissible fade show" role="alert" th:if="${successMessage}">
+        <strong>Επιτυχία!</strong> <span th:text="${successMessage}">Η ενέργεια ολοκληρώθηκε επιτυχώς.</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs mb-4" id="positionsTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="available-tab" data-bs-toggle="tab" data-bs-target="#available" type="button" role="tab" aria-controls="available" aria-selected="true">
+                Διαθέσιμες Θέσεις
+                <span class="badge bg-primary ms-1" th:text="${availablePositions != null ? availablePositions.size() : '2'}">2</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="assigned-tab" data-bs-toggle="tab" data-bs-target="#assigned" type="button" role="tab" aria-controls="assigned" aria-selected="false">
+                Ανατεθειμένες Θέσεις
+                <span class="badge bg-success ms-1" th:text="${assignedPositions != null ? assignedPositions.size() : '3'}">3</span>
+            </button>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="positionsTabsContent">
+        <!-- Available Positions Tab -->
+        <div class="tab-pane fade show active" id="available" role="tabpanel" aria-labelledby="available-tab">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div th:if="${availablePositions != null and availablePositions.isEmpty()}" class="alert alert-info">
+                        Δεν υπάρχουν διαθέσιμες θέσεις πρακτικής αυτή τη στιγμή. Μπορείτε να προσθέσετε μια νέα θέση με το κουμπί "Νέα Θέση".
+                    </div>
+
+                    <div class="table-responsive" th:if="${availablePositions != null and !availablePositions.isEmpty()}">
+                        <table class="table table-hover">
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Περιγραφή</th>
+                                <th>Περίοδος</th>
+                                <th>Απαιτούμενες Δεξιότητες</th>
+                                <th>Ημ/νία Δημιουργίας</th>
+                                <th>Ενέργειες</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <!-- Thymeleaf loop through available positions -->
+                            <tr th:each="position : ${availablePositions}">
+                                <td th:text="${position.id}">1</td>
+                                <td th:text="${position.description}">Java Developer Internship</td>
+                                <td th:text="${#temporals.format(position.startDate, 'dd/MM/yyyy') + ' - ' + #temporals.format(position.endDate, 'dd/MM/yyyy')}">01/06/2025 - 31/08/2025</td>
+                                <td>
+                                    <span th:each="skill, iterStat : ${position.requiredSkills}" class="badge bg-secondary me-1" th:text="${skill}">Java</span>
+                                </td>
+                                <td th:text="${#temporals.format(position.createdAt, 'dd/MM/yyyy')}">10/04/2025</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button type="button" class="btn btn-outline-secondary"
+                                                data-bs-toggle="modal"
+                                                th:data-bs-target="${'#viewPositionModal-' + position.id}"
+                                                data-bs-target="#viewPositionModal-1">
+                                            Προβολή
+                                        </button>
+                                        <button type="button" class="btn btn-outline-danger"
+                                                data-bs-toggle="modal"
+                                                th:data-bs-target="${'#deletePositionModal-' + position.id}"
+                                                data-bs-target="#deletePositionModal-1">
+                                            Διαγραφή
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <!-- Example for preview -->
+                            <tr>
+                                <td>1</td>
+                                <td>Java Developer Internship</td>
+                                <td>01/06/2025 - 31/08/2025</td>
+                                <td>
+                                    <span class="badge bg-secondary me-1">Java</span>
+                                    <span class="badge bg-secondary me-1">Spring Boot</span>
+                                    <span class="badge bg-secondary me-1">SQL</span>
+                                </td>
+                                <td>10/04/2025</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#viewPositionModal-1">Προβολή</button>
+                                        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deletePositionModal-1">Διαγραφή</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>Web Developer Intern</td>
+                                <td>15/06/2025 - 15/09/2025</td>
+                                <td>
+                                    <span class="badge bg-secondary me-1">HTML/CSS</span>
+                                    <span class="badge bg-secondary me-1">JavaScript</span>
+                                    <span class="badge bg-secondary me-1">React</span>
+                                </td>
+                                <td>12/04/2025</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#viewPositionModal-2">Προβολή</button>
+                                        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deletePositionModal-2">Διαγραφή</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assigned Positions Tab -->
+        <div class="tab-pane fade" id="assigned" role="tabpanel" aria-labelledby="assigned-tab">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div th:if="${assignedPositions != null and assignedPositions.isEmpty()}" class="alert alert-info">
+                        Δεν υπάρχουν ανατεθειμένες θέσεις πρακτικής αυτή τη στιγμή.
+                    </div>
+
+                    <div class="table-responsive" th:if="${assignedPositions != null and !assignedPositions.isEmpty()}">
+                        <table class="table table-hover">
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Περιγραφή</th>
+                                <th>Φοιτητής</th>
+                                <th>Περίοδος</th>
+                                <th>Αξιολόγηση</th>
+                                <th>Ενέργειες</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <!-- Thymeleaf loop through assigned positions -->
+                            <tr th:each="position : ${assignedPositions}">
+                                <td th:text="${position.id}">3</td>
+                                <td th:text="${position.description}">Full-stack Developer</td>
+                                <td th:text="${position.studentName}">Γιώργος Παπαδόπουλος</td>
+                                <td th:text="${#temporals.format(position.startDate, 'dd/MM/yyyy') + ' - ' + #temporals.format(position.endDate, 'dd/MM/yyyy')}">01/07/2025 - 30/09/2025</td>
+                                <td>
+                                    <span th:if="${position.evaluated}" class="badge bg-success">Έχει Αξιολογηθεί</span>
+                                    <span th:unless="${position.evaluated}" class="badge bg-warning">Εκκρεμεί</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button type="button" class="btn btn-outline-secondary"
+                                                data-bs-toggle="modal"
+                                                th:data-bs-target="${'#viewPositionModal-' + position.id}"
+                                                data-bs-target="#viewPositionModal-3">
+                                            Προβολή
+                                        </button>
+                                        <a th:if="${!position.evaluated}" th:href="@{/company/evaluate/{id}(id=${position.id})}" href="/company/evaluate/3" class="btn btn-outline-primary">Αξιολόγηση</a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <!-- Example for preview -->
+                            <tr>
+                                <td>3</td>
+                                <td>Full-stack Developer</td>
+                                <td>Γιώργος Παπαδόπουλος</td>
+                                <td>01/07/2025 - 30/09/2025</td>
+                                <td>
+                                    <span class="badge bg-warning">Εκκρεμεί</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#viewPositionModal-3">Προβολή</button>
+                                        <a href="/company/evaluate/3" class="btn btn-outline-primary">Αξιολόγηση</a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td>Data Analyst Intern</td>
+                                <td>Μαρία Νικολάου</td>
+                                <td>15/06/2025 - 15/09/2025</td>
+                                <td>
+                                    <span class="badge bg-success">Έχει Αξιολογηθεί</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#viewPositionModal-4">Προβολή</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Footer -->
+<footer class="bg-light text-center p-3 mt-5">
+    <p>© 2025 Traineeship Application System</p>
+</footer>
+
+<!-- New Position Modal -->
+<div class="modal fade" id="newPositionModal" tabindex="-1" aria-labelledby="newPositionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="newPositionModalLabel">Νέα Θέση Πρακτικής Άσκησης</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form th:action="@{/company/positions}" action="/company/positions" method="post" id="newPositionForm" class="needs-validation" novalidate>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Περιγραφή Θέσης</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                        <div class="invalid-feedback">Παρακαλώ εισάγετε περιγραφή για τη θέση.</div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="startDate" class="form-label">Ημερομηνία Έναρξης</label>
+                            <input type="date" class="form-control" id="startDate" name="startDate" required>
+                            <div class="invalid-feedback">Παρακαλώ επιλέξτε ημερομηνία έναρξης.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="endDate" class="form-label">Ημερομηνία Λήξης</label>
+                            <input type="date" class="form-control" id="endDate" name="endDate" required>
+                            <div class="invalid-feedback">Παρακαλώ επιλέξτε ημερομηνία λήξης.</div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Απαιτούμενες Δεξιότητες</label>
+                        <div id="requiredSkillsContainer">
+                            <!-- Ένα αρχικό πεδίο για τις δεξιότητες -->
+                            <div class="input-group mb-2">
+                                <input type="text" class="form-control" name="requiredSkills[0]" placeholder="π.χ. Java" required>
+                                <button class="btn btn-outline-danger remove-skill" type="button">Αφαίρεση</button>
+                            </div>
+                        </div>
+                        <button type="button" id="addSkillBtn" class="btn btn-outline-secondary btn-sm mt-2">
+                            <i class="bi bi-plus-circle"></i> Προσθήκη Δεξιότητας
+                        </button>
+                        <div class="form-text">Προσθέστε τις απαιτούμενες δεξιότητες για τη θέση πρακτικής.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Θεματικές Περιοχές</label>
+                        <div id="topicsContainer">
+                            <!-- Ένα αρχικό πεδίο για τις θεματικές περιοχές -->
+                            <div class="input-group mb-2">
+                                <input type="text" class="form-control" name="topics[0]" placeholder="π.χ. Web Development" required>
+                                <button class="btn btn-outline-danger remove-topic" type="button">Αφαίρεση</button>
+                            </div>
+                        </div>
+                        <button type="button" id="addTopicBtn" class="btn btn-outline-secondary btn-sm mt-2">
+                            <i class="bi bi-plus-circle"></i> Προσθήκη Θεματικής Περιοχής
+                        </button>
+                        <div class="form-text">Προσθέστε τις θεματικές περιοχές που σχετίζονται με τη θέση πρακτικής.</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Ακύρωση</button>
+                <button type="submit" form="newPositionForm" class="btn btn-primary">Δημιουργία Θέσης</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Position Modal (Example) -->
+<div class="modal fade" id="viewPositionModal-1" tabindex="-1" aria-labelledby="viewPositionModalLabel-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewPositionModalLabel-1">Λεπτομέρειες Θέσης</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h4>Java Developer Internship</h4>
+                <p class="text-muted">01/06/2025 - 31/08/2025</p>
+
+                <h5 class="mt-4">Περιγραφή</h5>
+                <p>Η Tech Solutions SA αναζητά φοιτητή/τρια για πρακτική άσκηση στο τμήμα ανάπτυξης λογισμικού. Ο/Η ασκούμενος/η θα συμμετέχει στην ανάπτυξη εφαρμογών Java που χρησιμοποιούν τεχνολογίες Spring Boot και θα εργάζεται σε πραγματικά projects υπό την καθοδήγηση έμπειρων προγραμματιστών.</p>
+
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <h5>Απαιτούμενες Δεξιότητες</h5>
+                        <ul>
+                            <li>Java</li>
+                            <li>Spring Boot</li>
+                            <li>SQL</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Θεματικές Περιοχές</h5>
+                        <ul>
+                            <li>Web Development</li>
+                            <li>Backend Systems</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Κλείσιμο</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Position Modal (Example) -->
+<div class="modal fade" id="deletePositionModal-1" tabindex="-1" aria-labelledby="deletePositionModalLabel-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deletePositionModalLabel-1">Επιβεβαίωση Διαγραφής</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Είστε βέβαιοι ότι θέλετε να διαγράψετε τη θέση πρακτικής "Java Developer Internship";</p>
+                <p class="text-danger">Προσοχή: Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Ακύρωση</button>
+                <form action="/company/positions/1/delete" method="post">
+                    <button type="submit" class="btn btn-danger">Διαγραφή</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Position Modals (Generated by Thymeleaf) -->
+<div th:each="position : ${allPositions}" th:id="${'viewPositionModal-' + position.id}" class="modal fade" tabindex="-1" th:aria-labelledby="${'viewPositionModalLabel-' + position.id}" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" th:id="${'viewPositionModalLabel-' + position.id}">Λεπτομέρειες Θέσης</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h4 th:text="${position.description}">Position Description</h4>
+                <p class="text-muted" th:text="${#temporals.format(position.startDate, 'dd/MM/yyyy') + ' - ' + #temporals.format(position.endDate, 'dd/MM/yyyy')}">Start Date - End Date</p>
+
+                <div th:if="${position.status == 'ASSIGNED'}" class="alert alert-info mt-3">
+                    <strong>Ανατεθειμένη θέση:</strong> <span th:text="${position.studentName}">Student Name</span>
+                </div>
+
+                <h5 class="mt-4">Περιγραφή</h5>
+                <p th:text="${position.description}">Position description...</p>
+
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <h5>Απαιτούμενες Δεξιότητες</h5>
+                        <ul>
+                            <li th:each="skill : ${position.requiredSkills}" th:text="${skill}">Skill</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Θεματικές Περιοχές</h5>
+                        <ul>
+                            <li th:each="topic : ${position.topics}" th:text="${topic}">Topic</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Κλείσιμο</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Position Modals (Generated by Thymeleaf) -->
+<div th:each="position : ${availablePositions}" th:id="${'deletePositionModal-' + position.id}" class="modal fade" tabindex="-1" th:aria-labelledby="${'deletePositionModalLabel-' + position.id}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" th:id="${'deletePositionModalLabel-' + position.id}">Επιβεβαίωση Διαγραφής</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p th:text="'Είστε βέβαιοι ότι θέλετε να διαγράψετε τη θέση πρακτικής &quot;' + ${position.description} + '&quot;;'">Confirm deletion message</p>
+                <p class="text-danger">Προσοχή: Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Ακύρωση</button>
+                <form th:action="@{/company/positions/{id}/delete(id=${position.id})}" method="post">
+                    <button type="submit" class="btn btn-danger">Διαγραφή</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Date validation
+        const startDateInput = document.getElementById('startDate');
+        const endDateInput = document.getElementById('endDate');
+
+        if (startDateInput && endDateInput) {
+            // Set minimum date to today
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            let mm = today.getMonth() + 1;
+            let dd = today.getDate();
+
+            if (dd < 10) dd = '0' + dd;
+            if (mm < 10) mm = '0' + mm;
+
+            const todayFormatted = yyyy + '-' + mm + '-' + dd;
+            startDateInput.setAttribute('min', todayFormatted);
+
+            // Validate end date after start date
+            startDateInput.addEventListener('change', function() {
+                endDateInput.setAttribute('min', this.value);
+                if (endDateInput.value && endDateInput.value < this.value) {
+                    endDateInput.value = this.value;
+                }
+            });
+        }
+
+        // Add/Remove Skills
+        const addSkillBtn = document.getElementById('addSkillBtn');
+        const requiredSkillsContainer = document.getElementById('requiredSkillsContainer');
+
+        if (addSkillBtn && requiredSkillsContainer) {
+            addSkillBtn.addEventListener('click', function() {
+                const newSkillField = document.createElement('div');
+                newSkillField.className = 'input-group mb-2';
+                newSkillField.innerHTML = `
+                        <input type="text" class="form-control" name="requiredSkills[]" placeholder="π.χ. Java">
+                        <button class="btn btn-outline-danger remove-skill" type="button">Αφαίρεση</button>
+                    `;
+                requiredSkillsContainer.appendChild(newSkillField);
+
+                // Add event listener to new remove button
+                newSkillField.querySelector('.remove-skill').addEventListener('click', removeSkill);
+            });
+
+            // Remove Skill field
+            function removeSkill() {
+                if (requiredSkillsContainer.children.length > 1) {
+                    this.closest('.input-group').remove();
+                } else {
+                    // If this is the last one, just clear the value
+                    this.closest('.input-group').querySelector('input').value = '';
+                }
+            }
+
+            // Attach event listeners to existing remove buttons
+            document.querySelectorAll('.remove-skill').forEach(button => {
+                button.addEventListener('click', removeSkill);
+            });
+        }
+
+        // Add/Remove Topics
+        const addTopicBtn = document.getElementById('addTopicBtn');
+        const topicsContainer = document.getElementById('topicsContainer');
+
+        if (addTopicBtn && topicsContainer) {
+            addTopicBtn.addEventListener('click', function() {
+                const newTopicField = document.createElement('div');
+                newTopicField.className = 'input-group mb-2';
+                newTopicField.innerHTML = `
+                        <input type="text" class="form-control" name="topics[]" placeholder="π.χ. Web Development">
+                        <button class="btn btn-outline-danger remove-topic" type="button">Αφαίρεση</button>
+                    `;
+                topicsContainer.appendChild(newTopicField);
+
+                // Add event listener to new remove button
+                newTopicField.querySelector('.remove-topic').addEventListener('click', removeTopic);
+            });
+
+            // Remove Topic field
+            function removeTopic() {
+                if (topicsContainer.children.length > 1) {
+                    this.closest('.input-group').remove();
+                } else {
+                    // If this is the last one, just clear the value
+                    this.closest('.input-group').querySelector('input').value = '';
+                }
+            }
+
+            // Attach event listeners to existing remove buttons
+            document.querySelectorAll('.remove-topic').forEach(button => {
+                button.addEventListener('click', removeTopic);
+            });
+        }
+
+        // Form validation
+        const form = document.getElementById('newPositionForm');
+        if (form) {
+            form.addEventListener('submit', function(event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            });
+        }
+    });
+</script>
+</body>
+</html>

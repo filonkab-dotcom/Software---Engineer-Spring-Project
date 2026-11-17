@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="el" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Εύρεση Θέσεων για Φοιτητή | Traineeship Application</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<!-- Header -->
+<header>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/committee/dashboard">Traineeship Application</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/committee/applications">Αιτήσεις Φοιτητών</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/committee/in-progress">Πρακτικές σε Εξέλιξη</a>
+                    </li>
+                </ul>
+                <div class="d-flex">
+                        <span class="navbar-text me-3">
+                            <span th:text="${user.firstName + ' ' + user.lastName}">Όνομα Χρήστη</span>
+                        </span>
+                    <a href="/logout" class="btn btn-outline-light btn-sm">Αποσύνδεση</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<!-- Main Content -->
+<main class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/committee/applications">Αιτήσεις Φοιτητών</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Εύρεση Θέσεων για Φοιτητή</li>
+                </ol>
+            </nav>
+            <h1>Εύρεση Θέσεων για Φοιτητή</h1>
+        </div>
+    </div>
+
+    <!-- Student Info Card -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Στοιχεία Φοιτητή</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <p><strong>Ονοματεπώνυμο:</strong> <span th:text="${student.firstName + ' ' + student.lastName}">Γιώργος Παπαδόπουλος</span></p>
+                            <p><strong>Αριθμός Μητρώου:</strong> <span th:text="${student.universityId}">ΑΜ12345</span></p>
+                            <p><strong>Email:</strong> <span th:text="${student.email}">g.papadopoulos@example.com</span></p>
+                        </div>
+                        <div class="col-md-4">
+                            <p><strong>Δεξιότητες:</strong></p>
+                            <ul>
+                                <li th:each="skill : ${student.skills}">
+                                    <span th:text="${skill}">Java</span>
+                                </li>
+                                <!-- Example for preview -->
+                                <li>Java</li>
+                                <li>Spring Boot</li>
+                                <li>SQL</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <p><strong>Ενδιαφέροντα:</strong></p>
+                            <ul>
+                                <li th:each="interest : ${student.interests}">
+                                    <span th:text="${interest}">Web Development</span>
+                                </li>
+                                <!-- Example for preview -->
+                                <li>Web Development</li>
+                                <li>Machine Learning</li>
+                            </ul>
+                            <p><strong>Προτιμώμενη Τοποθεσία:</strong> <span th:text="${student.preferredLocation ?: 'Δεν έχει οριστεί'}">Αθήνα</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Filters -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Κριτήρια Αναζήτησης</h5>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/committee/matching}" method="get" id="searchForm">
+                        <input type="hidden" name="studentId" th:value="${student.id}" value="1">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="byInterest" name="byInterest" value="true">
+                                    <label class="form-check-label" for="byInterest">Αναζήτηση με βάση τα ενδιαφέροντα</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="byLocation" name="byLocation" value="true">
+                                    <label class="form-check-label" for="byLocation">Αναζήτηση με βάση την προτιμώμενη τοποθεσία</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <button type="submit" class="btn btn-primary">Αναζήτηση</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Διαθέσιμες Θέσεις</h5>
+                    <span class="badge bg-primary" th:text="${positions.size() + ' θέσεις βρέθηκαν'}">3 θέσεις βρέθηκαν</span>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Εταιρεία</th>
+                                <th>Περιγραφή</th>
+                                <th>Τοποθεσία</th>
+                                <th>Ημερομηνίες</th>
+                                <th>Ενέργειες</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <!-- Thymeleaf loop through positions -->
+                            <tr th:each="position : ${positions}">
+                                <td th:text="${position.id}">1</td>
+                                <td th:text="${position.company.companyName}">Tech Solutions SA</td>
+                                <td th:text="${position.description}">Java Developer Internship</td>
+                                <td th:text="${position.company.location}">Αθήνα</td>
+                                <td th:text="${#temporals.format(position.startDate, 'dd/MM/yyyy') + ' - ' + #temporals.format(position.endDate, 'dd/MM/yyyy')}">01/06/2025 - 31/08/2025</td>
+                                <td>
+                                    <a href="#" th:href="@{/committee/assign(applicationId=${param.applicationId},positionId=${position.id})}" class="btn btn-success btn-sm">Ανάθεση</a>
+                                    <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" th:data-bs-target="${'#positionModal-' + position.id}" data-bs-target="#positionModal-1">Λεπτομέρειες</button>
+                                </td>
+                            </tr>
+                            <!-- Example for preview -->
+                            <tr>
+                                <td>1</td>
+                                <td>Tech Solutions SA</td>
+                                <td>Java Developer Internship</td>
+                                <td>Αθήνα</td>
+                                <td>01/06/2025 - 31/08/2025</td>
+                                <td>
+                                    <a href="/committee/assign?applicationId=1&positionId=1" class="btn btn-success btn-sm">Ανάθεση</a>
+                                    <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#positionModal-1">Λεπτομέρειες</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>DataCorp</td>
+                                <td>Web Developer Intern</td>
+                                <td>Θεσσαλονίκη</td>
+                                <td>15/06/2025 - 15/09/2025</td>
+                                <td>
+                                    <a href="/committee/assign?applicationId=1&positionId=2" class="btn btn-success btn-sm">Ανάθεση</a>
+                                    <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#positionModal-2">Λεπτομέρειες</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>InnoTech</td>
+                                <td>Full-stack Developer</td>
+                                <td>Αθήνα</td>
+                                <td>01/07/2025 - 30/09/2025</td>
+                                <td>
+                                    <a href="/committee/assign?applicationId=1&positionId=3" class="btn btn-success btn-sm">Ανάθεση</a>
+                                    <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#positionModal-3">Λεπτομέρειες</button>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Position Details Modal (Example) -->
+    <div class="modal fade" id="positionModal-1" tabindex="-1" aria-labelledby="positionModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="positionModalLabel">Λεπτομέρειες Θέσης</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h4>Java Developer Internship - Tech Solutions SA</h4>
+                    <p class="text-muted">Αθήνα | 01/06/2025 - 31/08/2025</p>
+
+                    <h5 class="mt-4">Περιγραφή</h5>
+                    <p>Η Tech Solutions SA αναζητά φοιτητή για πρακτική άσκηση στο τμήμα ανάπτυξης λογισμικού. Ο ασκούμενος θα συμμετέχει στην ανάπτυξη εφαρμογών Java που χρησιμοποιούν τεχνολογίες Spring Boot και θα εργάζεται σε πραγματικά projects υπό την καθοδήγηση έμπειρων προγραμματιστών.</p>
+
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <h5>Απαιτούμενες Δεξιότητες</h5>
+                            <ul>
+                                <li>Java</li>
+                                <li>Spring Boot</li>
+                                <li>SQL</li>
+                                <li>Git</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Θεματικές Περιοχές</h5>
+                            <ul>
+                                <li>Web Development</li>
+                                <li>Backend Systems</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Κλείσιμο</button>
+                    <a href="/committee/assign?applicationId=1&positionId=1" class="btn btn-success">Ανάθεση Θέσης</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Position Details Modals (generated by Thymeleaf) -->
+    <div th:each="position : ${positions}" th:id="${'positionModal-' + position.id}" class="modal fade" tabindex="-1" aria-labelledby="${'positionModalLabel-' + position.id}" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" th:id="${'positionModalLabel-' + position.id}">Λεπτομέρειες Θέσης</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h4 th:text="${position.description + ' - ' + position.company.companyName}">Position Title - Company Name</h4>
+                    <p class="text-muted" th:text="${position.company.location + ' | ' + #temporals.format(position.startDate, 'dd/MM/yyyy') + ' - ' + #temporals.format(position.endDate, 'dd/MM/yyyy')}">Location | Start Date - End Date</p>
+
+                    <h5 class="mt-4">Περιγραφή</h5>
+                    <p th:text="${position.description}">Position description...</p>
+
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <h5>Απαιτούμενες Δεξιότητες</h5>
+                            <ul>
+                                <li th:each="skill : ${position.requiredSkills}" th:text="${skill}">Skill</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Θεματικές Περιοχές</h5>
+                            <ul>
+                                <li th:each="topic : ${position.topics}" th:text="${topic}">Topic</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Κλείσιμο</button>
+                    <a th:href="@{/committee/assign(applicationId=${param.applicationId},positionId=${position.id})}" class="btn btn-success">Ανάθεση Θέσης</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Footer -->
+<footer class="bg-light text-center p-3 mt-5">
+    <p>© 2025 Traineeship Application System</p>
+</footer>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Form submission with checkbox state
+    document.getElementById('searchForm').addEventListener('submit', function(e) {
+        const byInterest = document.getElementById('byInterest');
+        const byLocation = document.getElementById('byLocation');
+
+        // If none are checked, show a warning
+        if (!byInterest.checked && !byLocation.checked) {
+            alert('Παρακαλώ επιλέξτε τουλάχιστον ένα κριτήριο αναζήτησης');
+            e.preventDefault();
+        }
+    });
+</script>
+</body>
+</html>

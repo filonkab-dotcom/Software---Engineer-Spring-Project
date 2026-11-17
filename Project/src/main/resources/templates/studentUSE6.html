@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="el" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ημερολόγιο Πρακτικής Άσκησης | Traineeship Application</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<!-- Header -->
+<header>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/student/dashboard">Traineeship Application</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/student/profile">Το Προφίλ μου</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/student/apply">Αίτηση Πρακτικής</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/student/logbook">Ημερολόγιο Πρακτικής</a>
+                    </li>
+                </ul>
+                <div class="d-flex">
+                        <span class="navbar-text me-3">
+                            <span th:text="${user.firstName + ' ' + user.lastName}">Γιώργος Παπαδόπουλος</span>
+                        </span>
+                    <a href="/logout" class="btn btn-outline-light btn-sm">Αποσύνδεση</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<!-- Main Content -->
+<main class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1>Ημερολόγιο Πρακτικής Άσκησης</h1>
+            <p class="text-muted">Καταγράψτε τις δραστηριότητές σας κατά τη διάρκεια της πρακτικής άσκησης</p>
+        </div>
+        <div class="col-auto" th:if="${activeTraineeship}">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newEntryModal">
+                <i class="bi bi-plus-circle me-1"></i> Νέα Καταχώριση
+            </button>
+        </div>
+    </div>
+
+    <!-- No active traineeship warning -->
+    <div th:if="${!activeTraineeship}" class="alert alert-warning mb-4">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        Δεν έχετε ενεργή πρακτική άσκηση. Για να χρησιμοποιήσετε το ημερολόγιο πρακτικής, πρέπει πρώτα να κάνετε αίτηση και να σας ανατεθεί θέση πρακτικής άσκησης.
+        <div class="mt-2">
+            <a href="/student/apply" class="btn btn-sm btn-warning">Υποβολή Αίτησης</a>
+        </div>
+    </div>
+
+    <!-- Success message -->
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+        <strong>Επιτυχία!</strong> <span th:text="${successMessage}">Η καταχώριση αποθηκεύτηκε επιτυχώς.</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <!-- Traineeship Info Card -->
+    <div th:if="${activeTraineeship}" class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">Στοιχεία Πρακτικής Άσκησης</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6>Εταιρεία</h6>
+                            <p class="mb-1"><strong>Επωνυμία:</strong> <span th:text="${traineeship.companyName}">Tech Solutions SA</span></p>
+                            <p class="mb-1"><strong>Τοποθεσία:</strong> <span th:text="${traineeship.location}">Αθήνα</span></p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>Θέση</h6>
+                            <p class="mb-1"><strong>Τίτλος:</strong> <span th:text="${traineeship.position}">Java Developer Internship</span></p>
+                            <p class="mb-1"><strong>Περίοδος:</strong> <span th:text="${#temporals.format(traineeship.startDate, 'dd/MM/yyyy') + ' - ' + #temporals.format(traineeship.endDate, 'dd/MM/yyyy')}">01/06/2025 - 31/08/2025</span></p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>Επιβλέπων Καθηγητής</h6>
+                            <p class="mb-1"><strong>Ονοματεπώνυμο:</strong> <span th:text="${traineeship.professorName}">Δρ. Μαρία Αντωνίου</span></p>
+                            <p class="mb-1"><strong>Email:</strong> <span th:text="${traineeship.professorEmail}">m.antoniou@example.com</span></p>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <div class="progress">
+                                <div class="progress-bar progress-bar-striped" role="progressbar"
+                                     th:style="'width: ' + ${traineeship.progressPercentage} + '%'"
+                                     th:aria-valuenow="${traineeship.progressPercentage}"
+                                     aria-valuemin="0" aria-valuemax="100"
+                                     style="width: 40%">
+                                    <span th:text="${traineeship.progressPercentage} + '%'">40%</span>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between mt-1">
+                                <small th:text="${#temporals.format(traineeship.startDate, 'dd/MM/yyyy')}">01/06/2025</small>
+                                <small th:text="${#temporals.format(traineeship.endDate, 'dd/MM/yyyy')}">31/08/2025</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logbook Entries -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Καταχωρίσεις Ημερολογίου</h5>
+                    <span th:if="${entries != null}" class="badge bg-primary" th:text="${entries.size() + ' καταχωρίσεις'}">5 καταχωρίσεις</span>
+                </div>
+                <div class="card-body">
+                    <!-- No entries message -->
+                    <div th:if="${entries == null || entries.isEmpty()}" class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Δεν υπάρχουν καταχωρίσεις στο ημερολόγιο.
+                        <span th:if="${activeTraineeship}">Χρησιμοποιήστε το κουμπί "Νέα Καταχώριση" για να προσθέσετε την πρώτη σας καταχώριση.</span>
+                    </div>
+
+                    <!-- Timeline of entries -->
+                    <div th:if="${entries != null && !entries.isEmpty()}" class="logbook-timeline">
+                        <!-- Thymeleaf loop through entries -->
+                        <div th:each="entry : ${entries}" class="timeline-item">
+                            <div class="timeline-date" th:text="${#temporals.format(entry.entryDate, 'dd MMMM yyyy')}">15 Ιουνίου 2025</div>
+                            <div class="timeline-badge">
+                                <span th:text="${#temporals.format(entry.entryDate, 'dd')}">15</span>
+                            </div>
+                            <div class="timeline-content">
+                                <div class="actions">
+                                    <button th:if="${activeTraineeship && entry.editable}" class="btn btn-sm btn-outline-primary"
+                                            data-bs-toggle="modal"
+                                            th:attr="data-entry-id=${entry.id}, data-entry-date=${#temporals.format(entry.entryDate, 'yyyy-MM-dd')}, data-entry-text=${entry.description}"
+                                            data-bs-target="#editEntryModal">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                </div>
+                                <div class="card">
+                                    <div class="card-body">
+                                        <p th:text="${entry.description}">Περιγραφή καταχώρισης ημερολογίου...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Example entries for preview -->
+                        <div class="timeline-item">
+                            <div class="timeline-date">15 Ιουνίου 2025</div>
+                            <div class="timeline-badge">
+                                <span>15</span>
+                            </div>
+                            <div class="timeline-content">
+                                <div class="actions">
+                                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editEntryModal">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                </div>
+                                <div class="card">
+                                    <div class="card-body">
+                                        <p>Πρώτη μέρα στην εταιρεία. Γνωριμία με την ομάδα ανάπτυξης και εξοικείωση με τα εργαλεία που χρησιμοποιούν (Git, JIRA, Jenkins). Ξεκίνησα να μελετώ την αρχιτεκτονική του συστήματος και τον κώδικα των εφαρμογών.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="timeline-date">22 Ιουνίου 2025</div>
+                            <div class="timeline-badge">
+                                <span>22</span>
+                            </div>
+                            <div class="timeline-content">
+                                <div class="actions">
+                                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editEntryModal">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                </div>
+                                <div class="card">
+                                    <div class="card-body">
+                                        <p>Μου ανατέθηκε το πρώτο μου task - να αναπτύξω ένα REST API για τη διαχείριση χρηστών. Έγραψα τις προδιαγραφές και ξεκίνησα την υλοποίηση χρησιμοποιώντας Spring Boot. Συνάντησα κάποιες δυσκολίες με τη διαχείριση εξαιρέσεων, αλλά με τη βοήθεια του μέντορά μου τις ξεπέρασα.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="timeline-date">30 Ιουνίου 2025</div>
+                            <div class="timeline-badge">
+                                <span>30</span>
+                            </div>
+                            <div class="timeline-content">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <p>Ολοκλήρωσα το πρώτο task και έκανα το πρώτο μου pull request. Μετά από code review και κάποιες διορθώσεις, ο κώδικάς μου ενσωματώθηκε στο main branch. Παρακολούθησα επίσης μια παρουσίαση για τις καλύτερες πρακτικές ασφάλειας στην ανάπτυξη web εφαρμογών.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Footer -->
+<footer class="bg-light text-center p-3 mt-5">
+    <p>© 2025 Traineeship Application System</p>
+</footer>
+
+<!-- New Entry Modal -->
+<div class="modal fade" id="newEntryModal" tabindex="-1" aria-labelledby="newEntryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="newEntryModalLabel">Νέα Καταχώριση Ημερολογίου</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form th:action="@{/student/logbook/add}" action="/student/logbook/add" method="post" class="needs-validation" novalidate>
+                    <div class="mb-3">
+                        <label for="entryDate" class="form-label">Ημερομηνία</label>
+                        <input type="date" class="form-control" id="entryDate" name="entryDate" th:max="${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}" required>
+                        <div class="invalid-feedback">Παρακαλώ επιλέξτε έγκυρη ημερομηνία (δεν μπορεί να είναι μελλοντική).</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Περιγραφή</label>
+                        <textarea class="form-control" id="description" name="description" rows="6" placeholder="Περιγράψτε τι κάνατε σήμερα κατά τη διάρκεια της πρακτικής σας άσκησης..." required></textarea>
+                        <div class="invalid-feedback">Παρακαλώ συμπληρώστε την περιγραφή.</div>
+                    </div>
+                    <div class="form-text mb-3">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Καταγράψτε λεπτομερώς τις δραστηριότητές σας, τα έργα στα οποία εργαστήκατε, τις δεξιότητες που αναπτύξατε και τις προκλήσεις που αντιμετωπίσατε.
+                    </div>
+                    <div class="modal-footer px-0 pb-0">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Ακύρωση</button>
+                        <button type="submit" class="btn btn-primary">Αποθήκευση</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Entry Modal -->
+<div class="modal fade" id="editEntryModal" tabindex="-1" aria-labelledby="editEntryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editEntryModalLabel">Επεξεργασία Καταχώρισης</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form th:action="@{/student/logbook/edit}" action="/student/logbook/edit" method="post" class="needs-validation" novalidate>
+                    <input type="hidden" id="editEntryId" name="entryId" value="">
+                    <div class="mb-3">
+                        <label for="editEntryDate" class="form-label">Ημερομηνία</label>
+                        <input type="date" class="form-control" id="editEntryDate" name="entryDate" required>
+                        <div class="invalid-feedback">Παρακαλώ επιλέξτε έγκυρη ημερομηνία.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editDescription" class="form-label">Περιγραφή</label>
+                        <textarea class="form-control" id="editDescription" name="description" rows="6" required></textarea>
+                        <div class="invalid-feedback">Παρακαλώ συμπληρώστε την περιγραφή.</div>
+                    </div>
+                    <div class="form-text mb-3">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Μπορείτε να επεξεργαστείτε τις καταχωρίσεις σας μέχρι και 7 ημέρες μετά τη δημιουργία τους.
+                    </div>
+                    <div class="modal-footer px-0 pb-0">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Ακύρωση</button>
+                        <button type="submit" class="btn btn-primary">Αποθήκευση Αλλαγών</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Form validation
+        const forms = document.querySelectorAll('.needs-validation');
+        Array.prototype.slice.call(forms).forEach(function(form) {
+            form.addEventListener('submit', function(event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+
+        // Current date for new entries
+        const entryDateInput = document.getElementById('entryDate');
+        if (entryDateInput) {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            let mm = today.getMonth() + 1;
+            let dd = today.getDate();
+
+            if (dd < 10) dd = '0' + dd;
+            if (mm < 10) mm = '0' + mm;
+
+            const todayFormatted = yyyy + '-' + mm + '-' + dd;
+            entryDateInput.value = todayFormatted;
+            entryDateInput.setAttribute('max', todayFormatted);
+        }
+
+        // Set data for editing entries
+        const editEntryModal = document.getElementById('editEntryModal');
+        if (editEntryModal) {
+            editEntryModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                const entryId = button.getAttribute('data-entry-id');
+                const entryDate = button.getAttribute('data-entry-date');
+                const entryText = button.getAttribute('data-entry-text');
+
+                const modalEntryId = document.getElementById('editEntryId');
+                const modalEntryDate = document.getElementById('editEntryDate');
+                const modalDescription = document.getElementById('editDescription');
+
+                modalEntryId.value = entryId;
+                modalEntryDate.value = entryDate;
+                modalDescription.value = entryText;
+            });
+        }
+
+        // Date restriction for edit entry
+        const editEntryDateInput = document.getElementById('editEntryDate');
+        if (editEntryDateInput) {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            let mm = today.getMonth() + 1;
+            let dd = today.getDate();
+
+            if (dd < 10) dd = '0' + dd;
+            if (mm < 10) mm = '0' + mm;
+
+            const todayFormatted = yyyy + '-' + mm + '-' + dd;
+            editEntryDateInput.setAttribute('max', todayFormatted);
+        }
+    });
+</script>
+<style>
+    /* Logbook Timeline styles */
+    .logbook-timeline {
+        position: relative;
+        padding: 20px 0;
+    }
+
+    .logbook-timeline::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 80px;
+        width: 2px;
+        background-color: #dee2e6;
+    }
+
+    .timeline-item {
+        position: relative;
+        margin-bottom: 30px;
+        padding-left: 120px;
+    }
+
+    .timeline-date {
+        position: absolute;
+        left: 0;
+        top: 15px;
+        width: 70px;
+        text-align: right;
+        font-weight: bold;
+        color: #2a4b8d;
+    }
+
+    .timeline-badge {
+        position: absolute;
+        left: 65px;
+        top: 5px;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background-color: #2a4b8d;
+        color: white;
+        text-align: center;
+        line-height: 30px;
+        z-index: 1;
+    }
+
+    .timeline-badge span {
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+
+    .timeline-content {
+        position: relative;
+        padding-left: 15px;
+    }
+
+    .timeline-content .card {
+        border-radius: 0.5rem;
+    }
+
+    .timeline-content .actions {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        z-index: 2;
+    }
+</style>
+</body>
+</html>

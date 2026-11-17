@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="el" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traineeship Application | Σύστημα Διαχείρισης Πρακτικής Άσκησης</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<!-- Header -->
+<header>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">Traineeship Application</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <!-- Menu options for not logged in users -->
+                    <li class="nav-item" th:if="${#authentication == null || !#authentication.isAuthenticated()}">
+                        <a class="nav-link" href="/login">Σύνδεση</a>
+                    </li>
+                    <li class="nav-item" th:if="${#authentication == null || !#authentication.isAuthenticated()}">
+                        <a class="nav-link" href="/register">Εγγραφή</a>
+                    </li>
+
+                    <!-- Menu options for logged in users -->
+                    <li class="nav-item" th:if="${#authentication != null && #authentication.isAuthenticated()}">
+                        <a class="nav-link" href="/dashboard">Πίνακας Ελέγχου</a>
+                    </li>
+                    <li class="nav-item" th:if="${#authentication != null && #authentication.isAuthenticated()}">
+                            <span class="navbar-text me-3">
+                                <span th:text="${user.firstName + ' ' + user.lastName}">Όνομα Χρήστη</span>
+                            </span>
+                    </li>
+                    <li class="nav-item" th:if="${#authentication != null && #authentication.isAuthenticated()}">
+                        <a href="/logout" class="btn btn-outline-light btn-sm">Αποσύνδεση</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<!-- Hero Section -->
+<section class="hero py-5 bg-light">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h1 class="display-4 fw-bold mb-4">Σύστημα Διαχείρισης Πρακτικής Άσκησης</h1>
+                <p class="lead mb-4">Το ολοκληρωμένο σύστημα διαχείρισης πρακτικής άσκησης για φοιτητές, εταιρείες και καθηγητές. Βρείτε την ιδανική θέση πρακτικής, προσφέρετε ευκαιρίες και παρακολουθήστε την πρόοδο των φοιτητών.</p>
+                <div class="d-grid gap-2 d-md-flex">
+                    <a href="/register" class="btn btn-primary btn-lg px-4">Εγγραφή</a>
+                    <a href="/login" class="btn btn-outline-primary btn-lg px-4">Σύνδεση</a>
+                </div>
+            </div>
+            <div class="col-md-6 d-none d-md-block">
+                <img src="/img/traineeship-hero.svg" alt="Traineeship Illustration" class="img-fluid" onerror="this.src='/api/placeholder/600/400'; this.onerror=null;">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">Χαρακτηριστικά & Δυνατότητες</h2>
+            <p class="text-muted">Ανακαλύψτε πώς το σύστημά μας βοηθά όλους τους εμπλεκόμενους στην πρακτική άσκηση</p>
+        </div>
+
+        <div class="row g-4">
+            <!-- For Students -->
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <div class="feature-icon bg-primary bg-gradient p-2 rounded-circle mb-3">
+                            <i class="bi bi-mortarboard-fill text-white fs-4"></i>
+                        </div>
+                        <h3 class="card-title h5">Για Φοιτητές</h3>
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-check-circle-fill text-success me-2"></i> Δημιουργία προφίλ με δεξιότητες και ενδιαφέροντα</li>
+                            <li><i class="bi bi-check-circle-fill text-success me-2"></i> Αίτηση για πρακτική άσκηση</li>
+                            <li><i class="bi bi-check-circle-fill text-success me-2"></i> Καταγραφή δραστηριοτήτων στο ημερολόγιο πρακτικής</li>
+                            <li><i class="bi bi-check-circle-fill text-success me-2"></i> Παρακολούθηση προόδου αίτησης</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- For Companies -->
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <div class="feature-icon bg-primary bg-gradient p-2 rounded-circle mb-3">
+                            <i class="bi bi-building-fill text-white fs-4"></i>
+                        </div>
+                        <h3 class="card-title h5">Για Εταιρείες</h3>
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-check-circle-fill text-success me-2"></i> Δημιουργία προφίλ εταιρείας</li>
+                            <li><i class="bi bi-check-circle-fill text-success me-2"></i> Ανάρτηση θέσεων πρακτικής άσκησης</li>
+                            <li><i class="bi bi-check-circle-fill text-success me-2"></i> Διαχείριση διαθέσιμων θέσεων</li>
+                            <li><i class="bi bi-check-circle-fill text-success me-2"></i> Αξιολόγηση φοιτητών</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- For Professors -->
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <div class="feature-icon bg-primary bg-gradient p-2 rounded-circle mb-3">
+                            <i class="bi bi-person-workspace text-white fs-4"></i>
+                        </div>
+                        <h3 class="card-title h5">Για Καθηγητές</h3>
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-check-circle-fill text-success me-2"></i> Δημιουργία προφίλ με ερευνητικά ενδιαφέροντα</li>
+                            <li><i class="bi bi-check-circle-fill text-success me-2"></i> Επίβλεψη θέσεων πρακτικής</li>
+                            <li><i class="bi bi-check-circle-fill text-success me-2"></i> Αξιολόγηση φοιτητών και εταιρειών</li>
+                            <li><i class="bi bi-check-circle-fill text-success me-2"></i> Παρακολούθηση προόδου φοιτητών</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">Πώς Λειτουργεί</h2>
+            <p class="text-muted">Μια απλή διαδικασία για όλους τους εμπλεκόμενους</p>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="process-timeline">
+                    <!-- Step 1 -->
+                    <div class="process-step">
+                        <div class="process-step-circle">1</div>
+                        <div class="process-step-content">
+                            <h4>Εγγραφή & Δημιουργία Προφίλ</h4>
+                            <p>Εγγραφείτε ως φοιτητής, εταιρεία ή καθηγητής και δημιουργήστε το προφίλ σας με όλες τις απαραίτητες πληροφορίες.</p>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="process-step">
+                        <div class="process-step-circle">2</div>
+                        <div class="process-step-content">
+                            <h4>Αιτήσεις & Αναρτήσεις Θέσεων</h4>
+                            <p>Οι φοιτητές υποβάλλουν αιτήσεις για πρακτική άσκηση, ενώ οι εταιρείες αναρτούν διαθέσιμες θέσεις με τις απαιτούμενες δεξιότητες.</p>
+                        </div>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="process-step">
+                        <div class="process-step-circle">3</div>
+                        <div class="process-step-content">
+                            <h4>Ανάθεση Θέσεων</h4>
+                            <p>Η επιτροπή πρακτικής άσκησης αναθέτει τις κατάλληλες θέσεις στους φοιτητές και ορίζει επιβλέποντες καθηγητές.</p>
+                        </div>
+                    </div>
+
+                    <!-- Step 4 -->
+                    <div class="process-step">
+                        <div class="process-step-circle">4</div>
+                        <div class="process-step-content">
+                            <h4>Παρακολούθηση & Αξιολόγηση</h4>
+                            <p>Οι φοιτητές καταγράφουν την πρόοδό τους στο ημερολόγιο, ενώ καθηγητές και εταιρείες παρέχουν αξιολογήσεις.</p>
+                        </div>
+                    </div>
+
+                    <!-- Step 5 -->
+                    <div class="process-step">
+                        <div class="process-step-circle">5</div>
+                        <div class="process-step-content">
+                            <h4>Ολοκλήρωση Πρακτικής</h4>
+                            <p>Η επιτροπή οριστικοποιεί την πρακτική άσκηση βάσει των αξιολογήσεων, ολοκληρώνοντας τη διαδικασία.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Registration CTA Section -->
+<section class="py-5 bg-primary text-white">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8 mx-auto text-center">
+                <h2 class="fw-bold mb-3">Ξεκινήστε την πορεία σας σήμερα!</h2>
+                <p class="lead mb-4">Εγγραφείτε στο σύστημα διαχείρισης πρακτικής άσκησης και επωφεληθείτε από όλες τις δυνατότητες που προσφέρει.</p>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                    <a href="/register" class="btn btn-light btn-lg px-4 fw-bold">Εγγραφή Τώρα</a>
+                    <a href="/login" class="btn btn-outline-light btn-lg px-4">Σύνδεση</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="bg-white text-center p-4 border-top">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 mb-4 mb-md-0 text-md-start">
+                <h5>Traineeship Application</h5>
+                <p class="text-muted">Σύστημα Διαχείρισης Πρακτικής Άσκησης</p>
+            </div>
+            <div class="col-md-4 mb-4 mb-md-0">
+                <h5>Σύνδεσμοι</h5>
+                <ul class="list-unstyled">
+                    <li><a href="/about" class="text-decoration-none">Σχετικά με εμάς</a></li>
+                    <li><a href="/contact" class="text-decoration-none">Επικοινωνία</a></li>
+                    <li><a href="/terms" class="text-decoration-none">Όροι Χρήσης</a></li>
+                    <li><a href="/privacy" class="text-decoration-none">Πολιτική Απορρήτου</a></li>
+                </ul>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <h5>Επικοινωνία</h5>
+                <p class="text-muted">
+                    <i class="bi bi-envelope me-2"></i>info@traineeshipapp.gr<br>
+                    <i class="bi bi-telephone me-2"></i>210-1234567<br>
+                    <i class="bi bi-geo-alt me-2"></i>Αθήνα, Ελλάδα
+                </p>
+            </div>
+        </div>
+        <hr>
+        <p class="mb-0">© 2025 Traineeship Application System. Με επιφύλαξη παντός δικαιώματος.</p>
+    </div>
+</footer>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
+<style>
+    /* Custom Styles */
+    .hero {
+        padding: 80px 0;
+        background: linear-gradient(to right, #f8f9fa, #e9ecef);
+    }
+
+    .feature-icon {
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Process Timeline */
+    .process-timeline {
+        position: relative;
+        padding: 20px 0;
+    }
+
+    .process-timeline::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 15px;
+        width: 2px;
+        background-color: #2a4b8d;
+    }
+
+    .process-step {
+        position: relative;
+        padding-left: 50px;
+        margin-bottom: 40px;
+    }
+
+    .process-step:last-child {
+        margin-bottom: 0;
+    }
+
+    .process-step-circle {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background-color: #2a4b8d;
+        color: white;
+        text-align: center;
+        line-height: 32px;
+        font-weight: bold;
+        z-index: 1;
+    }
+
+    .process-step-content {
+        padding-left: 15px;
+    }
+
+    .process-step-content h4 {
+        margin-bottom: 10px;
+        color: #2a4b8d;
+    }
+
+    @media (min-width: 768px) {
+        .process-timeline::before {
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .process-step {
+            padding-left: 0;
+            padding-right: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .process-step-circle {
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            font-size: 1.2rem;
+        }
+
+        .process-step-content {
+            width: 45%;
+            padding-left: 0;
+        }
+
+        .process-step:nth-child(odd) .process-step-content {
+            margin-right: auto;
+            padding-right: 50px;
+            text-align: right;
+        }
+
+        .process-step:nth-child(even) .process-step-content {
+            margin-left: auto;
+            padding-left: 50px;
+            order: 1;
+        }
+    }
+</style>
+</body>
+</html>

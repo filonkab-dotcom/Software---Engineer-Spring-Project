@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="el" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Πρακτικές σε Εξέλιξη | Traineeship Application</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<!-- Header -->
+<header>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+      <a class="navbar-brand" href="/committee/dashboard">Traineeship Application</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="/committee/applications">Αιτήσεις Φοιτητών</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="/committee/in-progress">Πρακτικές σε Εξέλιξη</a>
+          </li>
+        </ul>
+        <div class="d-flex">
+                        <span class="navbar-text me-3">
+                            <span th:text="${user.firstName + ' ' + user.lastName}">Όνομα Χρήστη</span>
+                        </span>
+          <a href="/logout" class="btn btn-outline-light btn-sm">Αποσύνδεση</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<!-- Main Content -->
+<main class="container mt-4">
+  <div class="row mb-4">
+    <div class="col">
+      <h1>Πρακτικές Άσκησης σε Εξέλιξη</h1>
+      <p class="text-muted">Διαχείριση και παρακολούθηση των ενεργών θέσεων πρακτικής άσκησης</p>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <div class="input-group">
+        <input type="text" class="form-control" placeholder="Αναζήτηση (εταιρεία, φοιτητής)..." id="searchInput">
+        <button class="btn btn-outline-secondary" type="button">Αναζήτηση</button>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <select class="form-select" id="companyFilter">
+        <option value="">Όλες οι εταιρείες</option>
+        <option th:each="company : ${companies}" th:value="${company.id}" th:text="${company.companyName}"></option>
+        <!-- Example for preview -->
+        <option>Tech Solutions SA</option>
+        <option>DataCorp</option>
+        <option>InnoTech</option>
+      </select>
+    </div>
+    <div class="col-md-3">
+      <select class="form-select" id="professorFilter">
+        <option value="">Όλοι οι καθηγητές</option>
+        <option th:each="professor : ${professors}" th:value="${professor.id}" th:text="${professor.firstName + ' ' + professor.lastName}"></option>
+        <!-- Example for preview -->
+        <option>Δρ. Μαρία Αντωνίου</option>
+        <option>Δρ. Γιάννης Δημητρίου</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Traineeships Table -->
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+          <tr>
+            <th>ID</th>
+            <th>Εταιρεία</th>
+            <th>Φοιτητής</th>
+            <th>Επιβλέπων Καθηγητής</th>
+            <th>Περίοδος</th>
+            <th>Κατάσταση</th>
+            <th>Ενέργειες</th>
+          </tr>
+          </thead>
+          <tbody>
+          <!-- Thymeleaf loop through positions -->
+          <tr th:each="position : ${positions}">
+            <td th:text="${position.id}">1</td>
+            <td th:text="${position.company.companyName}">Tech Solutions SA</td>
+            <td>
+              <span th:if="${position.student != null}" th:text="${position.student.firstName + ' ' + position.student.lastName}">Γιώργος Παπαδόπουλος</span>
+              <span th:if="${position.student == null}" class="text-muted">Δεν έχει ανατεθεί</span>
+            </td>
+            <td>
+              <span th:if="${position.supervisor != null}" th:text="${position.supervisor.firstName + ' ' + position.supervisor.lastName}">Δρ. Μαρία Αντωνίου</span>
+              <span th:if="${position.supervisor == null}" class="text-danger">Δεν έχει ανατεθεί</span>
+              <a th:if="${position.supervisor == null}" th:href="@{/committee/assign-professor(positionId=${position.id})}" class="btn btn-sm btn-outline-primary ms-2">Ανάθεση</a>
+            </td>
+            <td th:text="${#temporals.format(position.startDate, 'dd/MM/yyyy') + ' - ' + #temporals.format(position.endDate, 'dd/MM/yyyy')}">01/06/2025 - 31/08/2025</td>
+            <td>
+                                    <span th:with="hasEvals=${position.professorEvals > 0 || position.companyEvals > 0}">
+                                        <span th:if="${hasEvals}" class="badge bg-success">Έχει αξιολογήσεις</span>
+                                        <span th:unless="${hasEvals}" class="badge bg-warning">Χωρίς αξιολογήσεις</span>
+                                    </span>
+            </td>
+            <td>
+              <div class="btn-group btn-group-sm">
+                <a th:href="@{/committee/details(positionId=${position.id})}" href="/committee/details?positionId=1" class="btn btn-outline-secondary">Λεπτομέρειες</a>
+                <a th:href="@{/committee/finalize(positionId=${position.id})}" href="/committee/finalize?positionId=1" class="btn btn-outline-primary">Οριστικοποίηση</a>
+              </div>
+            </td>
+          </tr>
+          <!-- Example rows for preview -->
+          <tr>
+            <td>1</td>
+            <td>Tech Solutions SA</td>
+            <td>Γιώργος Παπαδόπουλος</td>
+            <td>
+              Δρ. Μαρία Αντωνίου
+            </td>
+            <td>01/06/2025 - 31/08/2025</td>
+            <td>
+              <span class="badge bg-success">Έχει αξιολογήσεις</span>
+            </td>
+            <td>
+              <div class="btn-group btn-group-sm">
+                <a href="/committee/details?positionId=1" class="btn btn-outline-secondary">Λεπτομέρειες</a>
+                <a href="/committee/finalize?positionId=1" class="btn btn-outline-primary">Οριστικοποίηση</a>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>DataCorp</td>
+            <td>Μαρία Νικολάου</td>
+            <td>
+              <span class="text-danger">Δεν έχει ανατεθεί</span>
+              <a href="/committee/assign-professor?positionId=2" class="btn btn-sm btn-outline-primary ms-2">Ανάθεση</a>
+            </td>
+            <td>15/06/2025 - 15/09/2025</td>
+            <td>
+              <span class="badge bg-warning">Χωρίς αξιολογήσεις</span>
+            </td>
+            <td>
+              <div class="btn-group btn-group-sm">
+                <a href="/committee/details?positionId=2" class="btn btn-outline-secondary">Λεπτομέρειες</a>
+                <a href="/committee/finalize?positionId=2" class="btn btn-outline-primary">Οριστικοποίηση</a>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>InnoTech</td>
+            <td>Δημήτρης Αντωνίου</td>
+            <td>
+              Δρ. Γιάννης Δημητρίου
+            </td>
+            <td>01/07/2025 - 30/09/2025</td>
+            <td>
+              <span class="badge bg-warning">Χωρίς αξιολογήσεις</span>
+            </td>
+            <td>
+              <div class="btn-group btn-group-sm">
+                <a href="/committee/details?positionId=3" class="btn btn-outline-secondary">Λεπτομέρειες</a>
+                <a href="/committee/finalize?positionId=3" class="btn btn-outline-primary">Οριστικοποίηση</a>
+              </div>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <nav class="mt-4">
+    <ul class="pagination justify-content-center">
+      <li class="page-item disabled">
+        <a class="page-link" href="#" tabindex="-1">Προηγούμενη</a>
+      </li>
+      <li class="page-item active"><a class="page-link" href="#">1</a></li>
+      <li class="page-item"><a class="page-link" href="#">2</a></li>
+      <li class="page-item">
+        <a class="page-link" href="#">Επόμενη</a>
+      </li>
+    </ul>
+  </nav>
+</main>
+
+<!-- Footer -->
+<footer class="bg-light text-center p-3 mt-5">
+  <p>© 2025 Traineeship Application System</p>
+</footer>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Filter functionality
+  const searchInput = document.getElementById('searchInput');
+  const companyFilter = document.getElementById('companyFilter');
+  const professorFilter = document.getElementById('professorFilter');
+
+  function applyFilters() {
+    const searchTerm = searchInput.value.toLowerCase();
+    const companyId = companyFilter.value;
+    const professorId = professorFilter.value;
+
+    // Here you would implement the filtering logic
+    console.log('Filters applied:', { searchTerm, companyId, professorId });
+  }
+
+  searchInput.addEventListener('input', applyFilters);
+  companyFilter.addEventListener('change', applyFilters);
+  professorFilter.addEventListener('change', applyFilters);
+</script>
+</body>
+</html>

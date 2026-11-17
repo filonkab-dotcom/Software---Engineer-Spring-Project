@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="el" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Αξιολόγηση Φοιτητή | Traineeship Application</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<!-- Header -->
+<header>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+      <a class="navbar-brand" href="/company/dashboard">Traineeship Application</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="/company/profile">Το Προφίλ μας</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/company/positions">Θέσεις Πρακτικής</a>
+          </li>
+        </ul>
+        <div class="d-flex">
+                        <span class="navbar-text me-3">
+                            <span th:text="${user.companyName}">Tech Solutions SA</span>
+                        </span>
+          <a href="/logout" class="btn btn-outline-light btn-sm">Αποσύνδεση</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<!-- Main Content -->
+<main class="container mt-4">
+  <div class="row mb-4">
+    <div class="col">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/company/positions">Θέσεις Πρακτικής</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Αξιολόγηση Φοιτητή</li>
+        </ol>
+      </nav>
+      <h1>Αξιολόγηση Φοιτητή</h1>
+      <p class="text-muted">Συμπληρώστε την φόρμα αξιολόγησης για τον φοιτητή που πραγματοποιεί την πρακτική άσκηση</p>
+    </div>
+  </div>
+
+  <!-- Position Info Card -->
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <div class="card shadow-sm">
+        <div class="card-header bg-info text-white">
+          <h5 class="card-title mb-0">Στοιχεία Πρακτικής Άσκησης</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <h6>Στοιχεία Θέσης</h6>
+              <p><strong>Περιγραφή:</strong> <span th:text="${position.description}">Java Developer Internship</span></p>
+              <p><strong>Περίοδος:</strong> <span th:text="${#temporals.format(position.startDate, 'dd/MM/yyyy') + ' - ' + #temporals.format(position.endDate, 'dd/MM/yyyy')}">01/06/2025 - 31/08/2025</span></p>
+              <p><strong>Απαιτούμενες Δεξιότητες:</strong>
+                <span th:each="skill, iterStat : ${position.requiredSkills}">
+                                        <span th:text="${skill + (iterStat.last ? '' : ', ')}">Java, Spring Boot, SQL</span>
+                                    </span>
+              </p>
+            </div>
+            <div class="col-md-6">
+              <h6>Στοιχεία Φοιτητή</h6>
+              <p><strong>Ονοματεπώνυμο:</strong> <span th:text="${student.firstName + ' ' + student.lastName}">Γιώργος Παπαδόπουλος</span></p>
+              <p><strong>Αριθμός Μητρώου:</strong> <span th:text="${student.universityId}">ΑΜ12345</span></p>
+              <p><strong>Email:</strong> <span th:text="${student.email}">g.papadopoulos@example.com</span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Evaluation Form -->
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card shadow-sm">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Φόρμα Αξιολόγησης</h5>
+        </div>
+        <div class="card-body">
+          <form th:action="@{/company/evaluate}" action="/company/evaluate" method="post" th:object="${evaluationForm}" class="needs-validation" novalidate>
+            <input type="hidden" name="positionId" th:value="${position.id}" value="1">
+
+            <!-- Student Motivation -->
+            <div class="mb-4">
+              <label class="form-label">Κίνητρο Φοιτητή</label>
+              <div class="d-flex justify-content-between mb-1">
+                <span>Χαμηλό</span>
+                <span>Υψηλό</span>
+              </div>
+              <div class="rating">
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="studentMotivation" id="motivation1" value="1"
+                         th:checked="${evaluationForm.studentMotivation == 1}" required>
+                  <label class="form-check-label" for="motivation1">1</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="studentMotivation" id="motivation2" value="2"
+                         th:checked="${evaluationForm.studentMotivation == 2}">
+                  <label class="form-check-label" for="motivation2">2</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="studentMotivation" id="motivation3" value="3"
+                         th:checked="${evaluationForm.studentMotivation == 3}">
+                  <label class="form-check-label" for="motivation3">3</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="studentMotivation" id="motivation4" value="4"
+                         th:checked="${evaluationForm.studentMotivation == 4}">
+                  <label class="form-check-label" for="motivation4">4</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="studentMotivation" id="motivation5" value="5"
+                         th:checked="${evaluationForm.studentMotivation == 5}">
+                  <label class="form-check-label" for="motivation5">5</label>
+                </div>
+              </div>
+              <div class="invalid-feedback">Παρακαλώ επιλέξτε βαθμολογία για το κίνητρο του φοιτητή.</div>
+              <div class="form-text">Βαθμολογήστε το ενδιαφέρον και την προθυμία του φοιτητή για μάθηση και συμμετοχή.</div>
+            </div>
+
+            <!-- Student Effectiveness -->
+            <div class="mb-4">
+              <label class="form-label">Αποτελεσματικότητα Φοιτητή</label>
+              <div class="d-flex justify-content-between mb-1">
+                <span>Χαμηλή</span>
+                <span>Υψηλή</span>
+              </div>
+              <div class="rating">
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="studentEffectiveness" id="effectiveness1" value="1"
+                         th:checked="${evaluationForm.studentEffectiveness == 1}" required>
+                  <label class="form-check-label" for="effectiveness1">1</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="studentEffectiveness" id="effectiveness2" value="2"
+                         th:checked="${evaluationForm.studentEffectiveness == 2}">
+                  <label class="form-check-label" for="effectiveness2">2</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="studentEffectiveness" id="effectiveness3" value="3"
+                         th:checked="${evaluationForm.studentEffectiveness == 3}">
+                  <label class="form-check-label" for="effectiveness3">3</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="studentEffectiveness" id="effectiveness4" value="4"
+                         th:checked="${evaluationForm.studentEffectiveness == 4}">
+                  <label class="form-check-label" for="effectiveness4">4</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="studentEffectiveness" id="effectiveness5" value="5"
+                         th:checked="${evaluationForm.studentEffectiveness == 5}">
+                  <label class="form-check-label" for="effectiveness5">5</label>
+                </div>
+              </div>
+              <div class="invalid-feedback">Παρακαλώ επιλέξτε βαθμολογία για την αποτελεσματικότητα του φοιτητή.</div>
+              <div class="form-text">Βαθμολογήστε την ικανότητα του φοιτητή να επιτυγχάνει τους στόχους του.</div>
+            </div>
+
+            <!-- Student Efficiency -->
+            <div class="mb-4">
+              <label class="form-label">Αποδοτικότητα Φοιτητή</label>
+              <div class="d-flex justify-content-between mb-1">
+                <span>Χαμηλή</span>
+                <span>Υψηλή</span>
+              </div>
+              <div class="rating">
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="studentEfficiency" id="efficiency1" value="1"
+                         th:checked="${evaluationForm.studentEfficiency == 1}" required>
+                  <label class="form-check-label" for="efficiency1">1</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="studentEfficiency" id="efficiency2" value="2"
+                         th:checked="${evaluationForm.studentEfficiency == 2}">
+                  <label class="form-check-label" for="efficiency2">2</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="studentEfficiency" id="efficiency3" value="3"
+                         th:checked="${evaluationForm.studentEfficiency == 3}">
+                  <label class="form-check-label" for="efficiency3">3</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="studentEfficiency" id="efficiency4" value="4"
+                         th:checked="${evaluationForm.studentEfficiency == 4}">
+                  <label class="form-check-label" for="efficiency4">4</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="studentEfficiency" id="efficiency5" value="5"
+                         th:checked="${evaluationForm.studentEfficiency == 5}">
+                  <label class="form-check-label" for="efficiency5">5</label>
+                </div>
+              </div>
+              <div class="invalid-feedback">Παρακαλώ επιλέξτε βαθμολογία για την αποδοτικότητα του φοιτητή.</div>
+              <div class="form-text">Βαθμολογήστε πόσο καλά ο φοιτητής αξιοποιεί τους διαθέσιμους πόρους και τον χρόνο του.</div>
+            </div>
+
+            <!-- Comments -->
+            <div class="mb-4">
+              <label for="comments" class="form-label">Σχόλια & Παρατηρήσεις (προαιρετικά)</label>
+              <textarea class="form-control" id="comments" name="comments" rows="4"
+                        th:text="${evaluationForm.comments}"></textarea>
+              <div class="form-text">Προσθέστε τυχόν παρατηρήσεις ή σχόλια σχετικά με την απόδοση του φοιτητή.</div>
+            </div>
+
+            <!-- Student Strengths -->
+            <div class="mb-4">
+              <label for="strengths" class="form-label">Δυνατά Σημεία Φοιτητή (προαιρετικά)</label>
+              <textarea class="form-control" id="strengths" name="strengths" rows="3"
+                        th:text="${evaluationForm.strengths}"></textarea>
+            </div>
+
+            <!-- Areas for Improvement -->
+            <div class="mb-4">
+              <label for="improvementAreas" class="form-label">Περιοχές Βελτίωσης (προαιρετικά)</label>
+              <textarea class="form-control" id="improvementAreas" name="improvementAreas" rows="3"
+                        th:text="${evaluationForm.improvementAreas}"></textarea>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="d-flex justify-content-end">
+              <a th:href="@{/company/positions}" href="/company/positions" class="btn btn-secondary me-2">Ακύρωση</a>
+              <button type="submit" class="btn btn-primary">Υποβολή Αξιολόγησης</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Footer -->
+<footer class="bg-light text-center p-3 mt-5">
+  <p>© 2025 Traineeship Application System</p>
+</footer>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
+<script>
+  // Form validation
+  (function() {
+    'use strict';
+
+    // Fetch all forms we want to apply validation to
+    var forms = document.querySelectorAll('.needs-validation');
+
+    // Loop over them and prevent submission
+    Array.prototype.slice.call(forms).forEach(function(form) {
+      form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+          event.preventDefault();
+          event.stopPropagation();
+
+          // Scroll to the first invalid element
+          const firstInvalid = form.querySelector(':invalid');
+          if (firstInvalid) {
+            firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }
+
+        form.classList.add('was-validated');
+      }, false);
+    });
+  })();
+</script>
+<style>
+  /* Custom styles for rating */
+  .rating {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    background-color: #f8f9fa;
+    padding: 10px;
+    border-radius: 5px;
+  }
+
+  .form-check-inline {
+    margin-right: 0;
+    flex: 1;
+    text-align: center;
+  }
+
+  .form-check-input[type="radio"] {
+    margin: 0 auto;
+  }
+
+  .form-check-label {
+    display: block;
+    margin-top: 5px;
+    font-weight: bold;
+  }
+</style>
+</body>
+</html>

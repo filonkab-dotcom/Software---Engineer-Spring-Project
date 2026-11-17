@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="el" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Αίτηση Πρακτικής Άσκησης | Traineeship Application</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<!-- Header -->
+<header>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/student/dashboard">Traineeship Application</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/student/profile">Το Προφίλ μου</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/student/apply">Αίτηση Πρακτικής</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/student/logbook">Ημερολόγιο Πρακτικής</a>
+                    </li>
+                </ul>
+                <div class="d-flex">
+                        <span class="navbar-text me-3">
+                            <span th:text="${user.firstName + ' ' + user.lastName}">Γιώργος Παπαδόπουλος</span>
+                        </span>
+                    <a href="/logout" class="btn btn-outline-light btn-sm">Αποσύνδεση</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<!-- Main Content -->
+<main class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1>Αίτηση Πρακτικής Άσκησης</h1>
+            <p class="text-muted">Συμπληρώστε και υποβάλετε την αίτησή σας για πρακτική άσκηση</p>
+        </div>
+    </div>
+
+    <!-- Existing Application Alert -->
+    <div th:if="${existingApplication}" class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
+        <strong>Προσοχή!</strong> Έχετε ήδη υποβάλει αίτηση πρακτικής άσκησης. Μπορείτε να δείτε την κατάσταση της αίτησής σας παρακάτω.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <!-- Success Alert -->
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+        <strong>Επιτυχία!</strong> <span th:text="${successMessage}">Η αίτησή σας υποβλήθηκε επιτυχώς.</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <!-- Application Status Card (visible when an application exists) -->
+    <div th:if="${existingApplication}" class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Κατάσταση Αίτησης</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <p><strong>Αριθμός Αίτησης:</strong> <span th:text="${application.id}">123456</span></p>
+                            <p><strong>Ημερομηνία Υποβολής:</strong> <span th:text="${#temporals.format(application.submittedAt, 'dd/MM/yyyy HH:mm')}">15/04/2025 14:30</span></p>
+                            <p><strong>Κατάσταση:</strong>
+                                <span th:if="${application.status == 'PENDING'}" class="badge bg-warning">Σε Εκκρεμότητα</span>
+                                <span th:if="${application.status == 'APPROVED'}" class="badge bg-success">Εγκρίθηκε</span>
+                                <span th:if="${application.status == 'REJECTED'}" class="badge bg-danger">Απορρίφθηκε</span>
+                            </p>
+                        </div>
+                        <div class="col-md-6" th:if="${assignedPosition != null}">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title">Ανατεθειμένη Θέση</h6>
+                                    <p><strong>Εταιρεία:</strong> <span th:text="${assignedPosition.companyName}">Tech Solutions SA</span></p>
+                                    <p><strong>Θέση:</strong> <span th:text="${assignedPosition.description}">Java Developer Internship</span></p>
+                                    <p><strong>Περίοδος:</strong> <span th:text="${#temporals.format(assignedPosition.startDate, 'dd/MM/yyyy') + ' - ' + #temporals.format(assignedPosition.endDate, 'dd/MM/yyyy')}">01/06/2025 - 31/08/2025</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="application-status-timeline mt-4">
+                        <div class="status-step">
+                            <div class="status-icon active">
+                                <i class="bi bi-check-circle-fill"></i>
+                            </div>
+                            <div class="status-text">
+                                <strong>Υποβολή Αίτησης</strong>
+                                <p th:text="${#temporals.format(application.submittedAt, 'dd/MM/yyyy')}">15/04/2025</p>
+                            </div>
+                        </div>
+
+                        <div class="status-step" th:classappend="${application.status != 'PENDING' ? 'active' : ''}">
+                            <div class="status-icon" th:classappend="${application.status != 'PENDING' ? 'active' : ''}">
+                                <i th:class="${application.status == 'APPROVED' ? 'bi bi-check-circle-fill' : (application.status == 'REJECTED' ? 'bi bi-x-circle-fill' : 'bi bi-circle')}"></i>
+                            </div>
+                            <div class="status-text">
+                                <strong>Αξιολόγηση από Επιτροπή</strong>
+                                <p th:if="${application.status == 'PENDING'}">Σε εξέλιξη...</p>
+                                <p th:if="${application.status != 'PENDING'}" th:text="${application.statusDate != null ? #temporals.format(application.statusDate, 'dd/MM/yyyy') : 'Ολοκληρώθηκε'}">20/04/2025</p>
+                            </div>
+                        </div>
+
+                        <div class="status-step" th:classappend="${application.status == 'APPROVED' ? 'active' : ''}">
+                            <div class="status-icon" th:classappend="${application.status == 'APPROVED' ? 'active' : ''}">
+                                <i th:class="${assignedPosition != null ? 'bi bi-check-circle-fill' : 'bi bi-circle'}"></i>
+                            </div>
+                            <div class="status-text">
+                                <strong>Ανάθεση Θέσης</strong>
+                                <p th:if="${assignedPosition == null && application.status == 'APPROVED'}">Σε εξέλιξη...</p>
+                                <p th:if="${assignedPosition != null}" th:text="${assignedPosition.assignedDate != null ? #temporals.format(assignedPosition.assignedDate, 'dd/MM/yyyy') : 'Ολοκληρώθηκε'}">25/04/2025</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-4" th:if="${application.status == 'REJECTED'}">
+                        <a href="/student/apply?new=true" class="btn btn-primary">Υποβολή Νέας Αίτησης</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Form (visible when no applications exist or explicitly requested) -->
+    <div th:if="${!existingApplication || param.new}" class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Φόρμα Αίτησης</h5>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/student/apply}" action="/student/apply" method="post" class="needs-validation" novalidate>
+                        <!-- Profile Summary -->
+                        <div class="mb-4">
+                            <h6>Περίληψη Προφίλ</h6>
+                            <div class="alert alert-info">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p class="mb-1"><strong>Όνομα:</strong> <span th:text="${user.firstName + ' ' + user.lastName}">Γιώργος Παπαδόπουλος</span></p>
+                                        <p class="mb-1"><strong>Email:</strong> <span th:text="${user.email}">g.papadopoulos@example.com</span></p>
+                                        <p class="mb-1"><strong>Αριθμός Μητρώου:</strong> <span th:text="${user.universityId}">ΑΜ12345</span></p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p class="mb-1"><strong>Προτιμώμενη Τοποθεσία:</strong> <span th:text="${user.preferredLocation ?: 'Δεν έχει οριστεί'}">Αθήνα</span></p>
+                                        <p class="mb-1"><strong>Δεξιότητες:</strong>
+                                            <span th:text="${#strings.listJoin(user.skills, ', ')}">Java, Spring Boot, SQL</span>
+                                        </p>
+                                        <p class="mb-1"><strong>Ενδιαφέροντα:</strong>
+                                            <span th:text="${#strings.listJoin(user.interests, ', ')}">Web Development, Cloud Computing</span>
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="mt-2 text-center">
+                                    <a href="/student/profile" class="btn btn-sm btn-outline-primary">Επεξεργασία Προφίλ</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Motivation Letter -->
+                        <div class="mb-4">
+                            <label for="motivationLetter" class="form-label">Επιστολή Κινήτρων</label>
+                            <textarea class="form-control" id="motivationLetter" name="motivationLetter" rows="6" required></textarea>
+                            <div class="form-text">Περιγράψτε τους λόγους για τους οποίους επιθυμείτε να κάνετε πρακτική άσκηση και πώς πιστεύετε ότι θα συμβάλει στην ακαδημαϊκή και επαγγελματική σας εξέλιξη.</div>
+                            <div class="invalid-feedback">Παρακαλώ συμπληρώστε την επιστολή κινήτρων.</div>
+                        </div>
+
+                        <!-- Additional Information -->
+                        <div class="mb-4">
+                            <label for="additionalInfo" class="form-label">Επιπλέον Πληροφορίες (προαιρετικό)</label>
+                            <textarea class="form-control" id="additionalInfo" name="additionalInfo" rows="3"></textarea>
+                            <div class="form-text">Εδώ μπορείτε να αναφέρετε οποιαδήποτε επιπλέον πληροφορία θεωρείτε σημαντική για την αίτησή σας.</div>
+                        </div>
+
+                        <!-- Agreements -->
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="termsAgreement" name="termsAgreement" required>
+                                <label class="form-check-label" for="termsAgreement">
+                                    Έχω διαβάσει και αποδέχομαι τους όρους και προϋποθέσεις της πρακτικής άσκησης.
+                                </label>
+                                <div class="invalid-feedback">Πρέπει να αποδεχτείτε τους όρους και προϋποθέσεις.</div>
+                            </div>
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="checkbox" id="dataAgreement" name="dataAgreement" required>
+                                <label class="form-check-label" for="dataAgreement">
+                                    Αποδέχομαι την επεξεργασία των προσωπικών μου δεδομένων σύμφωνα με την πολιτική απορρήτου.
+                                </label>
+                                <div class="invalid-feedback">Πρέπει να αποδεχτείτε την επεξεργασία των δεδομένων σας.</div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Υποβολή Αίτησης</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Side Info -->
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Πληροφορίες</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Διαδικασία Αίτησης</h6>
+                    <ol class="ps-3">
+                        <li>Συμπληρώστε και υποβάλετε την αίτηση</li>
+                        <li>Η επιτροπή πρακτικής θα εξετάσει την αίτησή σας</li>
+                        <li>Εάν εγκριθεί, θα σας ανατεθεί κατάλληλη θέση πρακτικής</li>
+                        <li>Θα λάβετε ειδοποίηση μέσω email για την έγκριση και την ανάθεση</li>
+                    </ol>
+
+                    <hr class="my-3">
+
+                    <h6>Προθεσμίες</h6>
+                    <ul class="ps-3">
+                        <li><strong>Έναρξη αιτήσεων:</strong> 01/03/2025</li>
+                        <li><strong>Λήξη αιτήσεων:</strong> 30/04/2025</li>
+                        <li><strong>Ανακοίνωση αποτελεσμάτων:</strong> 15/05/2025</li>
+                        <li><strong>Έναρξη πρακτικής:</strong> 01/06/2025 - 01/09/2025</li>
+                    </ul>
+
+                    <hr class="my-3">
+
+                    <h6>Χρήσιμοι Σύνδεσμοι</h6>
+                    <ul class="ps-3">
+                        <li><a href="#">Όροι και Προϋποθέσεις</a></li>
+                        <li><a href="#">Οδηγός Πρακτικής Άσκησης</a></li>
+                        <li><a href="#">Συχνές Ερωτήσεις</a></li>
+                        <li><a href="#">Επικοινωνία με την Επιτροπή</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Footer -->
+<footer class="bg-light text-center p-3 mt-5">
+    <p>© 2025 Traineeship Application System</p>
+</footer>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
+<script>
+    // Form validation
+    (function() {
+        'use strict';
+
+        // Fetch all forms we want to apply validation to
+        var forms = document.querySelectorAll('.needs-validation');
+
+        // Loop over them and prevent submission
+        Array.prototype.slice.call(forms).forEach(function(form) {
+            form.addEventListener('submit', function(event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    // Scroll to the first invalid element
+                    const firstInvalid = form.querySelector(':invalid');
+                    if (firstInvalid) {
+                        firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+
+                form.classList.add('was-validated');
+            }, false);
+        });
+    })();
+</script>
+<style>
+    /* Application status timeline */
+    .application-status-timeline {
+        position: relative;
+        padding: 20px 0;
+    }
+
+    .application-status-timeline::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 16px;
+        width: 2px;
+        background-color: #dee2e6;
+    }
+
+    .status-step {
+        position: relative;
+        padding-left: 50px;
+        margin-bottom: 30px;
+    }
+
+    .status-icon {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background-color: #f8f9fa;
+        border: 2px solid #dee2e6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1;
+    }
+
+    .status-icon.active {
+        background-color: #2a4b8d;
+        border-color: #2a4b8d;
+        color: white;
+    }
+
+    .status-text {
+        padding-left: 10px;
+    }
+
+    .status-text p {
+        color: #6c757d;
+        margin-bottom: 0;
+    }
+</style>
+</body>
+</html>
